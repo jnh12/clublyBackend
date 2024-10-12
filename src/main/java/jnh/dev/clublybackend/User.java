@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,14 +13,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class User {
     @Id
     private String id;
-    private String username;
+
     private String email;
     private String password;
 
-    public User(String username, String email, String password) {
-        this.username = username;
+    public User(String email, String password) {
         this.email = email;
         this.password = password;
     }
 }
-
