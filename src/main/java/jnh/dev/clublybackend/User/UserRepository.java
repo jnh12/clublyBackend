@@ -1,4 +1,4 @@
-package jnh.dev.clublybackend.Users;
+package jnh.dev.clublybackend.User;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;

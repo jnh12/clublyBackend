@@ -1,5 +1,7 @@
-package jnh.dev.clublybackend.Users;
+package jnh.dev.clublybackend.User;
 
+import jnh.dev.clublybackend.Requests.LoginRequest;
+import jnh.dev.clublybackend.Requests.SignUpRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
