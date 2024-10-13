@@ -24,19 +24,27 @@ public class UserService {
         String url = "https://www.google.com/recaptcha/api/siteverify";
         RestTemplate restTemplate = new RestTemplate();
 
-        // Parameters for reCAPTCHA verification
+        // Prepare the parameters for the reCAPTCHA API request
         Map<String, String> params = new HashMap<>();
-        params.put("secret", RECAPTCHA_SECRET);
-        params.put("response", recaptchaToken);
+        params.put("secret", RECAPTCHA_SECRET);  // Your reCAPTCHA secret key
+        params.put("response", recaptchaToken);  // The token from the frontend
 
-        // Send request to reCAPTCHA verification API
+        // Send request to Google reCAPTCHA verification API
         ResponseEntity<Map> response = restTemplate.postForEntity(url, params, Map.class);
 
+        // Extract the response from Google
         Map<String, Object> body = response.getBody();
+
+        System.out.println("reCAPTCHA validation response: " + body);
         Boolean success = (Boolean) body.get("success");
 
+        // Log the entire response from Google for debugging
+        System.out.println("reCAPTCHA validation response: " + body);
+
+        // Return whether the reCAPTCHA was successful
         return success != null && success;
     }
+
 
     public User registerUser(User user, String recaptchaToken) throws Exception {
         // Validate reCAPTCHA token

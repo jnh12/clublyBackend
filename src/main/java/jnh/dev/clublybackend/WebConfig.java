@@ -16,7 +16,7 @@ public class WebConfig {
                     // Allow requests from the frontend (localhost:3000)
                     registry.addMapping("/**")  // Apply to all paths
                             .allowedOrigins("http://localhost:3000")  // Frontend URL
-                            .allowedMethods("GET", "POST", "PUT", "DELETE")
+                            .allowedMethods("GET", "POST", "PUT", "DELETE","OPTIONS")
                             .allowedHeaders("*")
                             .allowCredentials(true);
                 }
