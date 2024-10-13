@@ -1,4 +1,4 @@
-package jnh.dev.clublybackend;
+package jnh.dev.clublybackend.Users;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -47,15 +47,15 @@ public class UserService {
 
 
     public User registerUser(User user, String recaptchaToken) throws Exception {
-        // Validate reCAPTCHA token
-        if (!validateRecaptcha(recaptchaToken)) {
-            throw new Exception("Invalid reCAPTCHA.");
-        }
-
         // Check if the email is already in use
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new Exception("Email already exists.");
         }
+
+//        // Validate reCAPTCHA token
+//        if (!validateRecaptcha(recaptchaToken)) {
+//            throw new Exception("Invalid reCAPTCHA.");
+//        }
 
         // Hash and store password
         user.setPassword(passwordEncoder.encode(user.getPassword()));

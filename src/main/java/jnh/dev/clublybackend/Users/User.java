@@ -1,4 +1,4 @@
-package jnh.dev.clublybackend;
+package jnh.dev.clublybackend.Users;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
