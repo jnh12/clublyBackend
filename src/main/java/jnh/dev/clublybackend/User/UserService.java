@@ -1,11 +1,16 @@
 package jnh.dev.clublybackend.User;
 
+import ch.qos.logback.core.CoreConstants;
+import jnh.dev.clublybackend.Email.EmailService;
+import jnh.dev.clublybackend.Email.PasswordResetToken;
+import jnh.dev.clublybackend.Email.PasswordResetTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -19,10 +24,15 @@ public class UserService {
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final String RECAPTCHA_SECRET = "6LdUb18qAAAAAKFJaDkAkYM4k6sVPGKfxewU3uhJ";  //secret key
 
+    @Autowired
+    private EmailService emailService;
+
     // Method to validate reCAPTCHA token
     public boolean validateRecaptcha(String recaptchaToken) {
         String url = "https://www.google.com/recaptcha/api/siteverify";
         RestTemplate restTemplate = new RestTemplate();
+
+        System.out.println(recaptchaToken);
 
         // Prepare the parameters for the reCAPTCHA API request
         Map<String, String> params = new HashMap<>();
@@ -55,7 +65,7 @@ public class UserService {
 //        // Validate reCAPTCHA token
 //        if (!validateRecaptcha(recaptchaToken)) {
 //            throw new Exception("Invalid reCAPTCHA.");
-//        }
+//       }
 
         // Hash and store password
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -79,4 +89,38 @@ public class UserService {
 
         return user;
     }
+
+    public void requestPasswordReset(String email) throws Exception {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (!userOptional.isPresent()) {
+            throw new Exception("No user with the provided email.");
+        }
+
+        String token = emailService.createPasswordResetToken(email);
+        emailService.sendResetPasswordEmail(email, token);
+    }
+
+    @Autowired
+    private PasswordResetTokenRepository tokenRepository;
+
+    public void resetPassword(String token, String newPassword) throws Exception {
+        Optional<PasswordResetToken> resetTokenOptional = tokenRepository.findByToken(token);
+
+        if (!resetTokenOptional.isPresent() || !isTokenValid(resetTokenOptional.get())) {
+            throw new Exception("Invalid or expired token.");
+        }
+
+        PasswordResetToken resetToken = resetTokenOptional.get();
+        User user = userRepository.findByEmail(resetToken.getEmail()).orElseThrow(() -> new Exception("User not found."));
+
+        // Hash the new password and save the user
+        user.setPassword(new BCryptPasswordEncoder().encode(newPassword));
+        userRepository.save(user);
+    }
+
+    public boolean isTokenValid(PasswordResetToken resetToken) {
+        return resetToken.getExpirationDate().isAfter(LocalDateTime.now());
+    }
+
+
 }
