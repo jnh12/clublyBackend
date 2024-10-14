@@ -23,13 +23,20 @@ public class UserController {
 
         try {
             User user = new User(signUpRequest.getEmail(), signUpRequest.getPassword());
-            User registeredUser = userService.registerUser(user, signUpRequest.getRecaptchaToken());
-            return ResponseEntity.ok(registeredUser);
-        }
-
-        catch (Exception e) {
-            // Log the error and return a 400 Bad Request with the error message
+            userService.registerUser(user);
+            return ResponseEntity.ok("Verification email sent. Please verify your email.");
+        } catch (Exception e) {
             System.out.println("Error during signup: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+        try {
+            userService.verifyEmail(token);
+            return ResponseEntity.ok("Email verified successfully.");
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

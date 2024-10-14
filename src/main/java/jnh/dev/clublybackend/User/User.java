@@ -16,9 +16,11 @@ public class User {
 
     private String email;
     private String password;
+    private boolean verified; // Track verification status
 
     public User(String email, String password) {
         this.email = email;
         this.password = password;
+        this.verified = false; // Default to unverified
     }
 }

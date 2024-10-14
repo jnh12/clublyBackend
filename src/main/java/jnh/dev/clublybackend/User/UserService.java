@@ -1,9 +1,7 @@
 package jnh.dev.clublybackend.User;
 
 import ch.qos.logback.core.CoreConstants;
-import jnh.dev.clublybackend.Email.EmailService;
-import jnh.dev.clublybackend.Email.PasswordResetToken;
-import jnh.dev.clublybackend.Email.PasswordResetTokenRepository;
+import jnh.dev.clublybackend.Email.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,53 +25,43 @@ public class UserService {
     @Autowired
     private EmailService emailService;
 
-    // Method to validate reCAPTCHA token
     public boolean validateRecaptcha(String recaptchaToken) {
         String url = "https://www.google.com/recaptcha/api/siteverify";
         RestTemplate restTemplate = new RestTemplate();
 
         System.out.println(recaptchaToken);
 
-        // Prepare the parameters for the reCAPTCHA API request
         Map<String, String> params = new HashMap<>();
         params.put("secret", RECAPTCHA_SECRET);  // Your reCAPTCHA secret key
         params.put("response", recaptchaToken);  // The token from the frontend
 
-        // Send request to Google reCAPTCHA verification API
         ResponseEntity<Map> response = restTemplate.postForEntity(url, params, Map.class);
 
-        // Extract the response from Google
         Map<String, Object> body = response.getBody();
 
         System.out.println("reCAPTCHA validation response: " + body);
         Boolean success = (Boolean) body.get("success");
 
-        // Log the entire response from Google for debugging
         System.out.println("reCAPTCHA validation response: " + body);
 
-        // Return whether the reCAPTCHA was successful
         return success != null && success;
     }
 
 
-    public User registerUser(User user, String recaptchaToken) throws Exception {
-        // Check if the email is already in use
+    public void registerUser(User user) throws Exception {
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new Exception("Email already exists.");
         }
 
-//        // Validate reCAPTCHA token
-//        if (!validateRecaptcha(recaptchaToken)) {
-//            throw new Exception("Invalid reCAPTCHA.");
-//       }
-
-        // Hash and store password
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        user.setVerified(false); // Set the user as unverified initially
+        userRepository.save(user); // Save the user with email and hashed password
+
+        String token = emailService.createVerificationToken(user.getEmail());
+        emailService.sendVerificationEmail(user.getEmail(), token);
     }
 
     public User loginUser(String email, String password) throws Exception {
-        // Check if the user exists by email
         Optional<User> userOptional = userRepository.findByEmail(email);
 
         if (!userOptional.isPresent()) {
@@ -82,13 +70,43 @@ public class UserService {
 
         User user = userOptional.get();
 
-        // Check if the password matches
+        if(!user.isVerified()){
+            throw new Exception("User is not verified.");
+        }
+
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new Exception("Invalid password.");
         }
 
         return user;
     }
+
+    @Autowired
+    private VerificationTokenRepository verificationTokenRepository;
+
+
+    public void verifyEmail(String token) throws Exception {
+        Optional<VerificationToken> optionalToken = verificationTokenRepository.findByToken(token);
+
+        if (!optionalToken.isPresent()) {
+            throw new Exception("Invalid token.");
+        }
+
+        VerificationToken verificationToken = optionalToken.get();
+
+        if (verificationToken.getExpirationDate().isBefore(LocalDateTime.now())) {
+            throw new Exception("Token expired.");
+        }
+
+        User user = userRepository.findByEmail(verificationToken.getEmail())
+                .orElseThrow(() -> new Exception("User not found."));
+
+        user.setVerified(true);
+        userRepository.save(user);
+
+        verificationTokenRepository.delete(verificationToken);
+    }
+
 
     public void requestPasswordReset(String email) throws Exception {
         Optional<User> userOptional = userRepository.findByEmail(email);
