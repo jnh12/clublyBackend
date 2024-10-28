@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 @Document(collection = "Clubs")
 public class Club {
+    @Id
     private String id;
     private String name;
     private String description;
