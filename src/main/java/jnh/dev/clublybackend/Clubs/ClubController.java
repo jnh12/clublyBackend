@@ -1,13 +1,13 @@
 package jnh.dev.clublybackend.Clubs;
 
-
-
-import jnh.dev.clublybackend.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 @RestController
@@ -19,39 +19,61 @@ public class ClubController {
     @Autowired
     private ClubService clubService;
 
-    @PostMapping("/create")
-    public ResponseEntity<Club> createClub(@RequestParam("name") String name,
-                                           @RequestParam("description") String description,
-                                           @RequestParam("category") String category,
-                                           @RequestParam("image") MultipartFile image,
-                                           @RequestHeader("userId") String userId) {
-        try {
-            // Handle image upload and get the URL
-            String imageUrl = clubService.uploadImage(image); // Implement this method in your ClubService
+    @PostMapping("/create-club")
+    public ResponseEntity<Club> createClub(@RequestBody ClubDto clubDto) throws IOException {
+        Club club = new Club();
+        club.setName(clubDto.getName());
+        club.setDescription(clubDto.getDescription());
+        club.setCategory(clubDto.getCategory());
+        club.setAdminIds(List.of(clubDto.getUserId()));
 
-            // Create a new club instance
-            Club club = new Club(name, description, category, imageUrl, userId);
-            club.getAdminIds().add(userId);
-            club.getMembers().add(userId);
+        // Decode Base64 image
+        byte[] decodedImage = Base64.getDecoder().decode(clubDto.getImage());
+        club.setImage(decodedImage);
 
-            Club savedClub = clubRepository.save(club);
-            return ResponseEntity.ok(savedClub);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(null); // Return a proper error response
-        }
+        // Initialize other fields with default values
+        club.setMembers(new ArrayList<>());
+        club.setAnnouncements(new ArrayList<>());
+        club.setEvents(new ArrayList<>());
+
+        Club createdClub = clubService.createClub(club);
+        return ResponseEntity.ok(createdClub);
     }
 
+    @PostMapping("/join-club")
+    public ResponseEntity<Club> joinClub(@RequestParam String clubId, @RequestParam String userId) {
+        Club updatedClub = clubService.addMemberToClub(clubId, userId);
+        return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
+    }
+
+
+    @PostMapping("/leave-club")
+    public ResponseEntity<Club> leaveClub(@RequestParam String clubId, @RequestParam String userId) {
+        Club updatedClub = clubService.removeMemberFromClub(clubId, userId);
+        return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
+    }
+
+
+    @GetMapping("/get-club-info")
+    public ResponseEntity<Club> getClubInfo(@RequestParam String clubId) {
+        return clubRepository.findById(clubId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
     @GetMapping
-    public ResponseEntity<List<Club>> getAllCLubs(){
+    public ResponseEntity<List<Club>> getAllClubs() {
         List<Club> clubs = clubRepository.findAll();
-        return ResponseEntity.ok(clubs);
+        return clubs.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(clubs);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Club> getClubById(@PathVariable String id){
-        Club club = clubRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(("Club not Found")));
-        return ResponseEntity.ok(club);
+    @GetMapping("/my-clubs")
+    public ResponseEntity<List<Club>> getUserClubs(@RequestParam String userId) {
+        List<Club> userClubs = clubRepository.findAll().stream()
+                .filter(club -> club.getMembers().contains(userId))
+                .toList();
+        return userClubs.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(userClubs);
     }
+
 
 }

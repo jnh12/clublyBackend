@@ -9,28 +9,41 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ClubService {
-
-    // Your Club repository
     @Autowired
     private ClubRepository clubRepository;
 
-    public String uploadImage(MultipartFile file) throws IOException {
-        // Define the directory to save the uploaded image
-        String directory = "src/main/resources/images"; // Update this to your desired path
-        File dir = new File(directory);
-        if (!dir.exists()) {
-            dir.mkdirs(); // Create the directory if it does not exist
-        }
+    public Club createClub(Club club) {
+        if (club.getAdminIds() == null) club.setAdminIds(new ArrayList<>());
+        if (club.getMembers() == null) club.setMembers(new ArrayList<>());
+        if (club.getAnnouncements() == null) club.setAnnouncements(new ArrayList<>());
+        if (club.getEvents() == null) club.setEvents(new ArrayList<>());
 
-        // Construct the file path and save the file
-        String filePath = directory + "/" + file.getOriginalFilename();
-        Path path = Paths.get(filePath);
-        Files.copy(file.getInputStream(), path);
-
-        return "/images/" + file.getOriginalFilename();
+        return clubRepository.save(club);
     }
-}
 
+    public Club addMemberToClub(String clubId, String userId) {
+        return clubRepository.findById(clubId).map(club -> {
+            if (!club.getMembers().contains(userId)) {
+                club.getMembers().add(userId);
+                return clubRepository.save(club);
+            }
+            return club;
+        }).orElse(null);
+    }
+
+    public Club removeMemberFromClub(String clubId, String userId) {
+        return clubRepository.findById(clubId).map(club -> {
+            if (club.getMembers().contains(userId)) {
+                club.getMembers().remove(userId);
+                return clubRepository.save(club);
+            }
+            return club;
+        }).orElse(null);
+    }
+
+}
