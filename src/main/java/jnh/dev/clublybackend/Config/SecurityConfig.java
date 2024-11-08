@@ -13,27 +13,12 @@ import java.util.Arrays;
 
 @Configuration
 public class SecurityConfig {
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.cors(Customizer.withDefaults())  // Future-proof CORS handling
-                .csrf(csrf -> csrf.disable())  // Updated CSRF disabling
+        http.csrf(csrf -> csrf.disable())  // Disable CSRF for testing
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/**").permitAll()  // Allow all requests
                 );
         return http.build();
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));  // Allow your frontend
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));  // Allow these methods
-        configuration.setAllowedHeaders(Arrays.asList("*"));  // Allow all headers
-        configuration.setAllowCredentials(true);  // Allow credentials (cookies, etc.)
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);  // Apply CORS configuration to all endpoints
-        return source;
     }
 }

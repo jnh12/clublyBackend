@@ -1,5 +1,7 @@
 package jnh.dev.clublybackend.Clubs;
 
+import jnh.dev.clublybackend.Events.Announcments;
+import jnh.dev.clublybackend.Events.Event;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -75,5 +77,29 @@ public class ClubController {
         return userClubs.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(userClubs);
     }
 
+
+    @GetMapping("/is-admin")
+    public ResponseEntity<Boolean> isAdmin(@RequestParam String clubId, @RequestParam String userId) {
+        boolean isAdmin = clubService.isAdmin(clubId, userId);
+        return ResponseEntity.ok(isAdmin);
+    }
+
+    @PostMapping("/add-event")
+    public ResponseEntity<Club> addEvent(@RequestParam String clubId, @RequestBody Event event) {
+        Club updatedClub = clubService.addEventToClub(clubId, event);
+        return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/add-announcement")
+    public ResponseEntity<Club> addAnnouncement(@RequestParam String clubId, @RequestBody Announcments announcement) {
+        Club updatedClub = clubService.addAnnouncementToClub(clubId, announcement);
+        return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/join-event")
+    public ResponseEntity<Club> joinEvent(@RequestParam String clubId, @RequestParam String eventId, @RequestParam String userId) {
+        Club updatedClub = clubService.joinEvent(clubId, eventId, userId);
+        return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
+    }
 
 }
