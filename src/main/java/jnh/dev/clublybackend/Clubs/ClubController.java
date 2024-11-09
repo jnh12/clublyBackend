@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -101,5 +102,29 @@ public class ClubController {
         Club updatedClub = clubService.joinEvent(clubId, eventId, userId);
         return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
     }
+
+    @GetMapping("/{clubId}/events/{eventId}")
+    public ResponseEntity<Event> getEvent(@PathVariable String clubId, @PathVariable String eventId) {
+        return clubRepository.findById(clubId)
+                .map(club -> club.getEvents().stream()
+                        .filter(event -> event.getId().equals(eventId))
+                        .findFirst()
+                        .map(ResponseEntity::ok)
+                        .orElse(ResponseEntity.notFound().build()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{clubId}/announcements")
+    public ResponseEntity<List<Announcments>> getAnnouncements(@PathVariable String clubId) {
+        return clubRepository.findById(clubId)
+                .map(club -> {
+                    List<Announcments> announcements = club.getAnnouncements();
+                    Collections.reverse(announcements); // Reverse order
+                    return ResponseEntity.ok(announcements);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
 
 }
