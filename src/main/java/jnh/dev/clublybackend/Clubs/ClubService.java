@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,11 +44,10 @@ public class ClubService {
                 club.getMembers().add(userId);
                 Club updatedClub = clubRepository.save(club);
 
-                // Fetch the user details to get the email address
                 Optional<User> userOptional = userRepository.findById(userId);
                 userOptional.ifPresent(user -> {
-                    String userEmail = user.getEmail();  // Assuming User class has an getEmail() method
-                    String clubName = club.getName();    // Assuming Club class has a getName() method
+                    String userEmail = user.getEmail();
+                    String clubName = club.getName();
 
                     emailService.sendJoinedEmail(userEmail, clubName);
                 });
@@ -57,6 +57,27 @@ public class ClubService {
             return club;
         }).orElse(null);
     }
+
+    public void notifyMembersOfApproachingEvent(String clubId, String eventId) {
+        clubRepository.findById(clubId).ifPresent(club -> {
+            String clubName = club.getName();
+
+            club.getEvents().stream()
+                    .filter(event -> event.getId().equals(eventId))
+                    .findFirst()
+                    .ifPresent(event -> {
+                        Date eventDate = event.getDate();
+
+                        event.getMembers().forEach(memberId -> {
+                            userRepository.findById(memberId).ifPresent(user -> {
+                                String userEmail = user.getEmail();
+                                emailService.sendApproachingEmail(userEmail, clubName, eventDate);
+                            });
+                        });
+                    });
+        });
+    }
+
 
 
     public Club removeMemberFromClub(String clubId, String userId) {
@@ -89,8 +110,6 @@ public class ClubService {
         }
         return null;
     }
-
-
 
     public Club addAnnouncementToClub(String clubId, Announcments announcement) {
         Optional<Club> clubOptional = clubRepository.findById(clubId);
@@ -149,11 +168,4 @@ public class ClubService {
         }
         return null;
     }
-
-
-
-
-
-
-
 }
