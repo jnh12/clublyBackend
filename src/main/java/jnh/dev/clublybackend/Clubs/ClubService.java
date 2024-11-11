@@ -209,7 +209,13 @@ public class ClubService {
         return null;
     }
 
-
-
+    public boolean deleteClub(String clubId) {
+        Optional<Club> clubOptional = clubRepository.findById(clubId);
+        if (clubOptional.isPresent()) {
+            clubRepository.deleteById(clubId);
+            return true; // Successfully deleted
+        }
+        return false; // Club not found
+    }
 
 }

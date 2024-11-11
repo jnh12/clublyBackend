@@ -159,4 +159,11 @@ public class ClubController {
         return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
     }
 
+    @DeleteMapping("/{clubId}")
+    public ResponseEntity<Void> deleteClub(@PathVariable String clubId) {
+        boolean isDeleted = clubService.deleteClub(clubId);
+        return isDeleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+    }
+
+
 }
