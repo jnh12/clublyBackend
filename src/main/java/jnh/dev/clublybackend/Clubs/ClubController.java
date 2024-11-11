@@ -125,6 +125,12 @@ public class ClubController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/leave-event")
+    public ResponseEntity<Club> leaveEvent(@RequestParam String clubId, @RequestParam String eventId, @RequestParam String userId) {
+        Club updatedClub = clubService.leaveEvent(clubId, eventId, userId);
+        return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
+    }
+
 
 
 }

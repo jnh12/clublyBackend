@@ -52,6 +52,19 @@ public class EmailService {
         mailSender.send(email);
     }
 
+    public void sendJoinedEmail(String toEmail, String clubName) {
+        String subject = "Welcome to the " + clubName;
+        String messageBody = "Dear member,\n\nWelcome to " + clubName + "!\nWe are thrilled to have you as part of our club. "
+                + "We look forward to your participation in our upcoming activities.\n\nBest regards,\nClubly Team";
+
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setTo(toEmail);
+        email.setSubject(subject);
+        email.setText(messageBody);
+
+        mailSender.send(email);
+    }
+
     public String createVerificationToken(String email) {
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken(email, token, LocalDateTime.now().plusHours(24)); // Token valid for 24 hours

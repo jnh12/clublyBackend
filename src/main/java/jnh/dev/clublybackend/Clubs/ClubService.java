@@ -1,7 +1,10 @@
 package jnh.dev.clublybackend.Clubs;
 
+import jnh.dev.clublybackend.Email.EmailService;
 import jnh.dev.clublybackend.Events.Announcments;
 import jnh.dev.clublybackend.Events.Event;
+import jnh.dev.clublybackend.User.User;
+import jnh.dev.clublybackend.User.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +23,11 @@ public class ClubService {
     @Autowired
     private ClubRepository clubRepository;
 
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private UserRepository userRepository;
+
     public Club createClub(Club club) {
         if (club.getAdminIds() == null) club.setAdminIds(new ArrayList<>());
         if (club.getMembers() == null) club.setMembers(new ArrayList<>());
@@ -33,11 +41,23 @@ public class ClubService {
         return clubRepository.findById(clubId).map(club -> {
             if (!club.getMembers().contains(userId)) {
                 club.getMembers().add(userId);
-                return clubRepository.save(club);
+                Club updatedClub = clubRepository.save(club);
+
+                // Fetch the user details to get the email address
+                Optional<User> userOptional = userRepository.findById(userId);
+                userOptional.ifPresent(user -> {
+                    String userEmail = user.getEmail();  // Assuming User class has an getEmail() method
+                    String clubName = club.getName();    // Assuming Club class has a getName() method
+
+                    emailService.sendJoinedEmail(userEmail, clubName);
+                });
+
+                return updatedClub;
             }
             return club;
         }).orElse(null);
     }
+
 
     public Club removeMemberFromClub(String clubId, String userId) {
         return clubRepository.findById(clubId).map(club -> {
@@ -111,6 +131,26 @@ public class ClubService {
         }
         return null;
     }
+
+    public Club leaveEvent(String clubId, String eventId, String userId) {
+        Optional<Club> clubOptional = clubRepository.findById(clubId);
+        if (clubOptional.isPresent()) {
+            Club club = clubOptional.get();
+
+            for (Event event : club.getEvents()) {
+                if (eventId.equals(event.getId()) && event.getMembers() != null) {
+                    if (event.getMembers().contains(userId)) {
+                        event.getMembers().remove(userId);
+                        event.setCapacity(event.getCapacity() + 1);
+                        return clubRepository.save(club);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
 
 
 
