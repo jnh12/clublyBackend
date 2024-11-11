@@ -168,4 +168,20 @@ public class ClubService {
         }
         return null;
     }
+
+    public boolean isMemberOfClub(String clubId, String userId) {
+        return clubRepository.findById(clubId)
+                .map(club -> club.getMembers().contains(userId))
+                .orElse(false);
+    }
+
+    public boolean isMemberOfEvent(String clubId, String eventId, String userId) {
+        return clubRepository.findById(clubId)
+                .map(club -> club.getEvents().stream()
+                        .filter(event -> event.getId().equals(eventId))
+                        .anyMatch(event -> event.getMembers() != null && event.getMembers().contains(userId)))
+                .orElse(false);
+    }
+
+
 }

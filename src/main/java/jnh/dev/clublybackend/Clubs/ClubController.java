@@ -137,4 +137,17 @@ public class ClubController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/is-member-of-club")
+    public ResponseEntity<Boolean> isMemberOfClub(@RequestParam String clubId, @RequestParam String userId) {
+        boolean isMember = clubService.isMemberOfClub(clubId, userId);
+        return ResponseEntity.ok(isMember);
+    }
+
+    @GetMapping("/{clubId}/events/{eventId}/is-member")
+    public ResponseEntity<Boolean> isMemberOfEvent(@PathVariable String clubId, @PathVariable String eventId, @RequestParam String userId) {
+        boolean isMember = clubService.isMemberOfEvent(clubId, eventId, userId);
+        return ResponseEntity.ok(isMember);
+    }
+
+
 }
