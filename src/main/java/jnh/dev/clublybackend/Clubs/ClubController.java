@@ -30,7 +30,7 @@ public class ClubController {
         club.setCategory(clubDto.getCategory());
         club.setAdminIds(List.of(clubDto.getUserId()));
 
-get        byte[] decodedImage = Base64.getDecoder().decode(clubDto.getImage());
+        byte[] decodedImage = Base64.getDecoder().decode(clubDto.getImage());
         club.setImage(decodedImage);
 
         club.setMembers(new ArrayList<>());
