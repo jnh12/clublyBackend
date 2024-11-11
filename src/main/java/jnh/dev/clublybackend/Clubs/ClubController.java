@@ -153,7 +153,10 @@ public class ClubController {
         return members.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(members);
     }
 
-
-
+    @DeleteMapping("/{clubId}/events/{eventId}")
+    public ResponseEntity<Club> deleteEvent(@PathVariable String clubId, @PathVariable String eventId) {
+        Club updatedClub = clubService.deleteEvent(clubId, eventId);
+        return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
+    }
 
 }

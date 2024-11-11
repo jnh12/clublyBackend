@@ -199,6 +199,16 @@ public class ClubService {
         return Collections.emptyList();
     }
 
+    public Club deleteEvent(String clubId, String eventId) {
+        Optional<Club> clubOptional = clubRepository.findById(clubId);
+        if (clubOptional.isPresent()) {
+            Club club = clubOptional.get();
+            club.getEvents().removeIf(event -> event.getId().equals(eventId));
+            return clubRepository.save(club);
+        }
+        return null;
+    }
+
 
 
 
