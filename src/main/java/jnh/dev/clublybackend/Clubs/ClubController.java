@@ -30,11 +30,9 @@ public class ClubController {
         club.setCategory(clubDto.getCategory());
         club.setAdminIds(List.of(clubDto.getUserId()));
 
-        // Decode Base64 image
-        byte[] decodedImage = Base64.getDecoder().decode(clubDto.getImage());
+get        byte[] decodedImage = Base64.getDecoder().decode(clubDto.getImage());
         club.setImage(decodedImage);
 
-        // Initialize other fields with default values
         club.setMembers(new ArrayList<>());
         club.setAnnouncements(new ArrayList<>());
         club.setEvents(new ArrayList<>());
@@ -148,6 +146,14 @@ public class ClubController {
         boolean isMember = clubService.isMemberOfEvent(clubId, eventId, userId);
         return ResponseEntity.ok(isMember);
     }
+
+    @GetMapping("/{clubId}/events/{eventId}/members")
+    public ResponseEntity<List<String>> getEventMembers(@PathVariable String clubId, @PathVariable String eventId) {
+        List<String> members = clubService.getEventMembers(clubId, eventId);
+        return members.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(members);
+    }
+
+
 
 
 }

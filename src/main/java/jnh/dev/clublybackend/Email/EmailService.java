@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -33,7 +32,7 @@ public class EmailService {
 
     public String createPasswordResetToken(String email) {
         String token = UUID.randomUUID().toString();
-        PasswordResetToken resetToken = new PasswordResetToken(email, token, LocalDateTime.now().plusHours(1)); // Token valid for 1 hour
+        PasswordResetToken resetToken = new PasswordResetToken(email, token, LocalDateTime.now().plusHours(1));
         tokenRepository.save(resetToken);
         return token;
     }
@@ -80,7 +79,7 @@ public class EmailService {
 
     public String createVerificationToken(String email) {
         String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken(email, token, LocalDateTime.now().plusHours(24)); // Token valid for 24 hours
+        VerificationToken verificationToken = new VerificationToken(email, token, LocalDateTime.now().plusHours(24));
         verificationTokenRepository.save(verificationToken);
         return token;
     }

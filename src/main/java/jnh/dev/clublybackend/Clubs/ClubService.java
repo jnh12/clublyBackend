@@ -7,17 +7,13 @@ import jnh.dev.clublybackend.User.User;
 import jnh.dev.clublybackend.User.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collections;
+
 
 @Service
 public class ClubService {
@@ -182,6 +178,20 @@ public class ClubService {
                         .anyMatch(event -> event.getMembers() != null && event.getMembers().contains(userId)))
                 .orElse(false);
     }
+
+    public List<String> getEventMembers(String clubId, String eventId) {
+        Optional<Club> clubOptional = clubRepository.findById(clubId);
+        if (clubOptional.isPresent()) {
+            Club club = clubOptional.get();
+            return club.getEvents().stream()
+                    .filter(event -> event.getId().equals(eventId))
+                    .findFirst()
+                    .map(Event::getMembers)
+                    .orElse(Collections.emptyList());
+        }
+        return Collections.emptyList();
+    }
+
 
 
 }
