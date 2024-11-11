@@ -131,6 +131,23 @@ public class ClubController {
         return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/{clubId}/events/{eventId}/isMember")
+    public ResponseEntity<Boolean> isMember(
+            @PathVariable String clubId,
+            @PathVariable String eventId,
+            @RequestParam String userId) {
+
+        return clubRepository.findById(clubId)
+                .map(club -> club.getEvents().stream()
+                        .filter(event -> event.getId().equals(eventId))
+                        .findFirst()
+                        .map(event -> event.getMembers().contains(userId))
+                        .map(ResponseEntity::ok)
+                        .orElse(ResponseEntity.notFound().build()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
 
 
 }
