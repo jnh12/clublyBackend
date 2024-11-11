@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -125,11 +126,11 @@ public class ClubService {
         if (clubOptional.isPresent()) {
             Club club = clubOptional.get();
 
-            boolean isUserMember = club.getMembers().contains(userId);
+            boolean isUserMemberOrAdmin = club.getMembers().contains(userId) || club.getAdminIds().contains(userId);
 
             for (Event event : club.getEvents()) {
                 if (eventId.equals(event.getId()) && event.getCapacity() > 0) {
-                    if (event.isMemberOnly() && !isUserMember) {
+                    if (event.isMemberOnly() && !isUserMemberOrAdmin) {
                         return null;
                     }
 
@@ -183,14 +184,21 @@ public class ClubService {
         Optional<Club> clubOptional = clubRepository.findById(clubId);
         if (clubOptional.isPresent()) {
             Club club = clubOptional.get();
-            return club.getEvents().stream()
+            List<String> memberIds = club.getEvents().stream()
                     .filter(event -> event.getId().equals(eventId))
                     .findFirst()
                     .map(Event::getMembers)
                     .orElse(Collections.emptyList());
+
+            return memberIds.stream()
+                    .map(userId -> userRepository.findById(userId))
+                    .filter(Optional::isPresent)
+                    .map(userOpt -> userOpt.get().getEmail()) // Assuming getEmail() is a method in your User class
+                    .collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
+
 
 
 
