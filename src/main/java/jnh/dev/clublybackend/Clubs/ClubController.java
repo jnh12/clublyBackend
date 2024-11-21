@@ -29,6 +29,7 @@ public class ClubController {
         club.setDescription(clubDto.getDescription());
         club.setCategory(clubDto.getCategory());
         club.setAdminIds(List.of(clubDto.getUserId()));
+        club.setApproved(false);
 
         byte[] decodedImage = Base64.getDecoder().decode(clubDto.getImage());
         club.setImage(decodedImage);
@@ -47,13 +48,11 @@ public class ClubController {
         return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
     }
 
-
     @PostMapping("/leave-club")
     public ResponseEntity<Club> leaveClub(@RequestParam String clubId, @RequestParam String userId) {
         Club updatedClub = clubService.removeMemberFromClub(clubId, userId);
         return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
     }
-
 
     @GetMapping("/get-club-info")
     public ResponseEntity<Club> getClubInfo(@RequestParam String clubId) {
@@ -64,8 +63,48 @@ public class ClubController {
 
     @GetMapping
     public ResponseEntity<List<Club>> getAllClubs() {
-        List<Club> clubs = clubRepository.findAll();
+        List<Club> clubs = clubRepository.findByIsApprovedTrue();
         return clubs.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(clubs);
+    }
+
+    @GetMapping("/get-all-pending-clubs")
+    public ResponseEntity<List<Club>> getAllPendingClubs() {
+        List<Club> pendingClubs = clubRepository.findByIsApprovedFalse();
+        return pendingClubs.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(pendingClubs);
+    }
+
+    @PostMapping("/approvePending/{id}")
+    public ResponseEntity<String> approvePendingClub(@PathVariable String id) {
+        Club club = clubRepository.findById(id).orElse(null);
+
+        if (club == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (club.isApproved()) {
+            return ResponseEntity.badRequest().body("Club is already approved.");
+        }
+
+        club.setApproved(true);
+        clubRepository.save(club);
+
+        return ResponseEntity.ok("Pending club approved successfully.");
+    }
+
+    @DeleteMapping("/deletePending/{id}")
+    public ResponseEntity<String> deletePendingClub(@PathVariable String id) {
+        Club club = clubRepository.findById(id).orElse(null);
+
+        if (club == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (club.isApproved()) {
+            return ResponseEntity.badRequest().body("Cannot delete an already approved club.");
+        }
+
+        clubRepository.deleteById(id);
+        return ResponseEntity.ok("Pending club deleted successfully.");
     }
 
     @GetMapping("/my-clubs")
@@ -75,7 +114,6 @@ public class ClubController {
                 .toList();
         return userClubs.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(userClubs);
     }
-
 
     @GetMapping("/is-admin")
     public ResponseEntity<Boolean> isAdmin(@RequestParam String clubId, @RequestParam String userId) {

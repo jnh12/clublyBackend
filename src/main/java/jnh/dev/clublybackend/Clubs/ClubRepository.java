@@ -6,4 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface ClubRepository extends MongoRepository<Club, String> {
+    List<Club> findByIsApprovedTrue();
+    List<Club> findByIsApprovedFalse();
 }

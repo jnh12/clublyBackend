@@ -29,5 +29,6 @@ public class Club {
     private List<String> members;
     private List<Announcments> announcements;
     private List<Event> events;
+    private boolean isApproved;
 
 }
