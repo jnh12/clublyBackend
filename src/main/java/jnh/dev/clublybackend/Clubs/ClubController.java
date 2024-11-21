@@ -2,6 +2,7 @@ package jnh.dev.clublybackend.Clubs;
 
 import jnh.dev.clublybackend.Events.Announcments;
 import jnh.dev.clublybackend.Events.Event;
+import jnh.dev.clublybackend.Events.Feedback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -205,16 +206,29 @@ public class ClubController {
         return isDeleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/{clubId}/feedback")
+    @PostMapping("/{clubId}/add-feedback")
     public ResponseEntity<Club> addFeedback(@PathVariable String clubId, @RequestParam String userEmail, @RequestParam String feedbackText) {
         Club updatedClub = clubService.addFeedback(clubId, userEmail, feedbackText);
         return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/{clubId}/feedback/{feedbackId}")
+    @DeleteMapping("/{clubId}/delete-feedback/{feedbackId}")
     public ResponseEntity<Club> removeFeedback(@PathVariable String clubId, @PathVariable int feedbackId) {
         Club updatedClub = clubService.removeFeedback(clubId, feedbackId);
         return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/{clubId}/get-all-feedback")
+    public ResponseEntity<List<Feedback>> getFeedback(@PathVariable String clubId) {
+        return clubRepository.findById(clubId)
+                .map(club -> {
+                    List<Feedback> feedbackList = club.getFeedback();
+                    if (feedbackList != null) {
+                        Collections.reverse(feedbackList);
+                    }
+                    return ResponseEntity.ok(feedbackList);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
 
