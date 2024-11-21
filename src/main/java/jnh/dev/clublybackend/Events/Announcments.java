@@ -14,5 +14,4 @@ import java.util.Date;
 @Setter
 public class Announcments {
     private String announcement;
-
 }

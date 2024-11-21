@@ -114,6 +114,7 @@ public class ClubService {
                 club.setAnnouncements(new ArrayList<>());
             }
             club.getAnnouncements().add(announcement);
+            notifyMembersOfNewAnnouncement(clubId, announcement.getAnnouncement());
             return clubRepository.save(club);
         }
         return null;
@@ -237,6 +238,18 @@ public class ClubService {
             });
         });
     }
+
+    public void notifyMembersOfNewAnnouncement(String clubId, String announcementText) {
+        clubRepository.findById(clubId).ifPresent(club -> {
+            club.getMembers().forEach(memberId -> {
+                userRepository.findById(memberId).ifPresent(user -> {
+                    String userEmail = user.getEmail();
+                    emailService.sendAnnouncement(userEmail, club.getName(), announcementText);
+                });
+            });
+        });
+    }
+
 
 
 
