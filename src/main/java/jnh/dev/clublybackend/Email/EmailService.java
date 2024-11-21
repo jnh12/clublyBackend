@@ -65,6 +65,30 @@ public class EmailService {
         mailSender.send(email);
     }
 
+    public void sendApprovedEmail(String toEmail, String clubName) {
+        String subject = "Your club | " + clubName;
+        String messageBody = "Dear User, your club " + clubName +" has been approved!";
+
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setTo(toEmail);
+        email.setSubject(subject);
+        email.setText(messageBody);
+
+        mailSender.send(email);
+    }
+
+    public void sendRejectedEmail(String toEmail, String clubName) {
+        String subject = "Your club status | " + clubName;
+        String messageBody = "Dear User, your club " + clubName +" has been rejected.";
+
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setTo(toEmail);
+        email.setSubject(subject);
+        email.setText(messageBody);
+
+        mailSender.send(email);
+    }
+
     public void sendApproachingEmail(String toEmail, String clubName, Date eventDate) {
         String subject = "An event you joined in the " + clubName;
         String messageBody = "The event you signed up for is on " + eventDate;

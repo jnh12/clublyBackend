@@ -75,8 +75,6 @@ public class ClubService {
         });
     }
 
-
-
     public Club removeMemberFromClub(String clubId, String userId) {
         return clubRepository.findById(clubId).map(club -> {
             if (club.getMembers().contains(userId)) {
@@ -217,5 +215,29 @@ public class ClubService {
         }
         return false; // Club not found
     }
+
+    public void notifyApprovedClub(String clubId) {
+        clubRepository.findById(clubId).ifPresent(club -> {
+            club.getAdminIds().forEach(adminId -> {
+                userRepository.findById(adminId).ifPresent(admin -> {
+                    String adminEmail = admin.getEmail();
+                    emailService.sendApprovedEmail(adminEmail, club.getName());
+                });
+            });
+        });
+    }
+
+    public void notifyRejectedClub(String clubId) {
+        clubRepository.findById(clubId).ifPresent(club -> {
+            club.getAdminIds().forEach(adminId -> {
+                userRepository.findById(adminId).ifPresent(admin -> {
+                    String adminEmail = admin.getEmail();
+                    emailService.sendRejectedEmail(adminEmail, club.getName());
+                });
+            });
+        });
+    }
+
+
 
 }

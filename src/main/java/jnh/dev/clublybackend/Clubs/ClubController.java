@@ -85,6 +85,7 @@ public class ClubController {
             return ResponseEntity.badRequest().body("Club is already approved.");
         }
 
+        clubService.notifyApprovedClub(id);
         club.setApproved(true);
         clubRepository.save(club);
 
@@ -103,6 +104,7 @@ public class ClubController {
             return ResponseEntity.badRequest().body("Cannot delete an already approved club.");
         }
 
+        clubService.notifyRejectedClub(id);
         clubRepository.deleteById(id);
         return ResponseEntity.ok("Pending club deleted successfully.");
     }
