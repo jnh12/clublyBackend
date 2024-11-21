@@ -211,5 +211,11 @@ public class ClubController {
         return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
     }
 
+    @DeleteMapping("/{clubId}/feedback/{feedbackId}")
+    public ResponseEntity<Club> removeFeedback(@PathVariable String clubId, @PathVariable int feedbackId) {
+        Club updatedClub = clubService.removeFeedback(clubId, feedbackId);
+        return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
+    }
+
 
 }
