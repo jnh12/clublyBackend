@@ -3,6 +3,7 @@ package jnh.dev.clublybackend.Clubs;
 import jnh.dev.clublybackend.Email.EmailService;
 import jnh.dev.clublybackend.Events.Announcments;
 import jnh.dev.clublybackend.Events.Event;
+import jnh.dev.clublybackend.Events.Feedback;
 import jnh.dev.clublybackend.User.User;
 import jnh.dev.clublybackend.User.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -250,6 +251,38 @@ public class ClubService {
         });
     }
 
+    public Club addFeedback(String clubId, String userEmail, String feedbackText) {
+        Optional<Club> clubOptional = clubRepository.findById(clubId);
+        if (clubOptional.isPresent()) {
+            Club club = clubOptional.get();
+
+            if (club.getFeedback() == null) {
+                club.setFeedback(new ArrayList<>());
+            }
+
+            Feedback feedback = new Feedback();
+            feedback.setId(club.getFeedback().size() + 1);
+            feedback.setUserEmail(userEmail);
+            feedback.setFeedback(feedbackText);
+
+            club.getFeedback().add(feedback);
+            return clubRepository.save(club);
+        }
+        return null;
+    }
+
+    public Club removeFeedback(String clubId, int feedbackId) {
+        Optional<Club> clubOptional = clubRepository.findById(clubId);
+        if (clubOptional.isPresent()) {
+            Club club = clubOptional.get();
+
+            if (club.getFeedback() != null) {
+                club.getFeedback().removeIf(feedback -> feedback.getId() == feedbackId);
+                return clubRepository.save(club);
+            }
+        }
+        return null;
+    }
 
 
 

@@ -205,5 +205,11 @@ public class ClubController {
         return isDeleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
+    @PostMapping("/{clubId}/feedback")
+    public ResponseEntity<Club> addFeedback(@PathVariable String clubId, @RequestParam String userEmail, @RequestParam String feedbackText) {
+        Club updatedClub = clubService.addFeedback(clubId, userEmail, feedbackText);
+        return updatedClub != null ? ResponseEntity.ok(updatedClub) : ResponseEntity.notFound().build();
+    }
+
 
 }

@@ -2,6 +2,7 @@ package jnh.dev.clublybackend.Clubs;
 
 import jnh.dev.clublybackend.Events.Announcments;
 import jnh.dev.clublybackend.Events.Event;
+import jnh.dev.clublybackend.Events.Feedback;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,5 +31,6 @@ public class Club {
     private List<Announcments> announcements;
     private List<Event> events;
     private boolean isApproved;
+    private List<Feedback> feedback;
 
 }
