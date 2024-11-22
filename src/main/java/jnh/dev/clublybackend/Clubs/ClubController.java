@@ -236,5 +236,14 @@ public class ClubController {
         return ResponseEntity.ok(isSuper);
     }
 
+    @GetMapping("/get-user-email")
+    public ResponseEntity<String> getUserEmail(@RequestParam String userId) {
+        String email = clubService.getUserEmailById(userId);
+        if (email != null) {
+            return ResponseEntity.ok(email);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
 }

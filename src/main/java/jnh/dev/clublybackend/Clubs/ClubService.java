@@ -289,4 +289,10 @@ public class ClubService {
         return SUPER_USER_IDS.contains(userId);
     }
 
+    public String getUserEmailById(String userId) {
+        return userRepository.findById(userId)
+                .map(User::getEmail)
+                .orElse(null);
+    }
+
 }
