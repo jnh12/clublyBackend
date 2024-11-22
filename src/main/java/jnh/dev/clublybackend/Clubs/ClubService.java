@@ -19,13 +19,14 @@ import java.util.stream.Collectors;
 
 @Service
 public class ClubService {
+
     @Autowired
     private ClubRepository clubRepository;
-
     @Autowired
     private EmailService emailService;
     @Autowired
     private UserRepository userRepository;
+    private static final List<String> SUPER_USER_IDS = List.of("superuser1", "superuser2", "superuser3");
 
     public Club createClub(Club club) {
         if (club.getAdminIds() == null) club.setAdminIds(new ArrayList<>());
@@ -284,6 +285,8 @@ public class ClubService {
         return null;
     }
 
-
+    public boolean isSuperUser(String userId) {
+        return SUPER_USER_IDS.contains(userId);
+    }
 
 }
