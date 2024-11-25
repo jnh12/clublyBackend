@@ -257,18 +257,21 @@ public class ClubController {
     }
 
     @PostMapping("/{clubId}/add-admin")
-    public ResponseEntity<Club> addAdminToClub(@PathVariable String clubId, @RequestParam String userId) {
+    public ResponseEntity<Club> addAdminToClub(@PathVariable String clubId, @RequestParam String userEmail) {
         Club club = clubRepository.findById(clubId).orElse(null);
         if (club == null) {
             return ResponseEntity.notFound().build();
         }
+        String userId = clubService.getUserIdByEmail(userEmail);
+        if (userId == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
         if (club.getAdminIds().contains(userId)) {
-            return ResponseEntity.badRequest().body(null); // User is already an admin
+            return ResponseEntity.badRequest().body(null);
         }
         club.getAdminIds().add(userId);
         Club updatedClub = clubRepository.save(club);
         return ResponseEntity.ok(updatedClub);
     }
-
 
 }

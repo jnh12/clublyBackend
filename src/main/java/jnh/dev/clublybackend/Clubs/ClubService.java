@@ -295,4 +295,10 @@ public class ClubService {
                 .orElse(null);
     }
 
+    public String getUserIdByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(User::getId)
+                .orElse(null);
+    }
+
 }
