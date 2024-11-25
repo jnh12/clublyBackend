@@ -26,7 +26,7 @@ public class ClubService {
     private EmailService emailService;
     @Autowired
     private UserRepository userRepository;
-    private static final List<String> SUPER_USER_IDS = List.of("superuser1", "superuser2", "superuser3");
+    private static final List<String> SUPER_USER_IDS = List.of("671fc51edf0c575d9790f454");
 
     public Club createClub(Club club) {
         if (club.getAdminIds() == null) club.setAdminIds(new ArrayList<>());
