@@ -246,4 +246,29 @@ public class ClubController {
         }
     }
 
+    @GetMapping("/{clubId}/members")
+    public ResponseEntity<List<String>> getAllClubMembers(@PathVariable String clubId) {
+        return clubRepository.findById(clubId)
+                .map(club -> {
+                    List<String> members = club.getMembers();
+                    return ResponseEntity.ok(members);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/{clubId}/add-admin")
+    public ResponseEntity<Club> addAdminToClub(@PathVariable String clubId, @RequestParam String userId) {
+        Club club = clubRepository.findById(clubId).orElse(null);
+        if (club == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if (club.getAdminIds().contains(userId)) {
+            return ResponseEntity.badRequest().body(null); // User is already an admin
+        }
+        club.getAdminIds().add(userId);
+        Club updatedClub = clubRepository.save(club);
+        return ResponseEntity.ok(updatedClub);
+    }
+
+
 }
