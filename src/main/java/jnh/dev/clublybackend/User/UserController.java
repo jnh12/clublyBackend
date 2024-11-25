@@ -18,28 +18,20 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignUpRequest signUpRequest) {
-
         System.out.println("Received signup request: " + signUpRequest);
-
+    
         try {
+            // Create a new user and register with reCAPTCHA token
             User user = new User(signUpRequest.getEmail(), signUpRequest.getPassword());
-            userService.registerUser(user);
+            userService.registerUser(user, signUpRequest.getRecaptchaToken()); // Pass recaptchaToken here
             return ResponseEntity.ok("Verification email sent. Please verify your email.");
         } catch (Exception e) {
             System.out.println("Error during signup: " + e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-    @GetMapping("/verify-email")
-    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
-        try {
-            userService.verifyEmail(token);
-            return ResponseEntity.ok("Email verified successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+    
+    
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {

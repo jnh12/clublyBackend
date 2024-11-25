@@ -7,6 +7,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -25,42 +27,55 @@ public class UserService {
     @Autowired
     private EmailService emailService;
 
+    @Value("${recaptcha.secret}")  // Inject the secret key from application.properties
+    private String recaptchaSecret;
+
     public boolean validateRecaptcha(String recaptchaToken) {
         String url = "https://www.google.com/recaptcha/api/siteverify";
         RestTemplate restTemplate = new RestTemplate();
-
-        System.out.println(recaptchaToken);
-
+    
+        // Prepare the parameters for the POST request
         Map<String, String> params = new HashMap<>();
-        params.put("secret", RECAPTCHA_SECRET);  // Your reCAPTCHA secret key
-        params.put("response", recaptchaToken);  // The token from the frontend
-
+        params.put("secret", recaptchaSecret);
+        params.put("response", recaptchaToken);
+    
+        // Make the API call to Google's reCAPTCHA service
         ResponseEntity<Map> response = restTemplate.postForEntity(url, params, Map.class);
-
         Map<String, Object> body = response.getBody();
-
-        System.out.println("reCAPTCHA validation response: " + body);
-        Boolean success = (Boolean) body.get("success");
-
-        System.out.println("reCAPTCHA validation response: " + body);
-
-        return success != null && success;
+    
+        if (body == null || !body.containsKey("success")) {
+            throw new RuntimeException("Failed to validate reCAPTCHA.");
+        }
+    
+        // Log the entire response for debugging
+        System.out.println("reCAPTCHA Validation Response: " + body);
+    
+        return Boolean.TRUE.equals(body.get("success"));
     }
+    
 
 
-    public void registerUser(User user) throws Exception {
+    public void registerUser(User user, String recaptchaToken) throws Exception {
+        // Validate reCAPTCHA first
+        if (!validateRecaptcha(recaptchaToken)) {
+            throw new Exception("Invalid reCAPTCHA token.");
+        }
+    
+        // Check if the user already exists
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new Exception("Email already exists.");
         }
-
+    
+        // Hash and save the user's password
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setVerified(false); // Set the user as unverified initially
-        userRepository.save(user); // Save the user with email and hashed password
-
+        user.setVerified(false);
+        userRepository.save(user);
+    
+        // Send a verification email
         String token = emailService.createVerificationToken(user.getEmail());
         emailService.sendVerificationEmail(user.getEmail(), token);
     }
-
+    
     public User loginUser(String email, String password) throws Exception {
         Optional<User> userOptional = userRepository.findByEmail(email);
 
